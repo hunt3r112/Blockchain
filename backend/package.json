@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,9 +12,12 @@
   "description": "",
   "dependencies": {
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "cron": "^4.1.0",
     "ethers": "^6.13.5",
     "express": "^4.21.2",
     "mysql2": "^3.12.0",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "web3": "^4.16.0"
   }
 }

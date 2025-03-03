@@ -38,7 +38,7 @@ contract TokenLaunchpad {
     mapping(address => mapping(address => TokenInfo)) public TokenCreators;
 
     // event tạo token
-    event TokenCreated(address indexed creator, address tokenAddress, string name, string symbol, string description, string image);
+    event TokenCreated(address indexed creator, address tokenAddress, string name, string symbol, uint256 totalSupply, string description, string image);
     // event swap token
     event TokenSwapped(address indexed sender, address repicient, address tokenAddress, uint256 amount);
     // event transfer to DEX
@@ -70,7 +70,7 @@ contract TokenLaunchpad {
         Tokens[address(token)] = tokenStruct;
         TokenCreators[msg.sender][address(token)] = Tokens[address(token)];
         
-        emit TokenCreated(msg.sender, address(token), name, symbol, description, image);
+        emit TokenCreated(msg.sender, address(token), name, symbol, TOTAL_SUPPLY, description, image);
         return address(token);
     }
 
@@ -131,8 +131,6 @@ contract TokenLaunchpad {
 
         emit TokensTransferredToDEX(tokenAddress, remainingTokens);
     }
-
-
 
     // cho phép hợp đồng nhận token
     receive() external payable {}
