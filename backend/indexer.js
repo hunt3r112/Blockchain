@@ -3,461 +3,110 @@ import mysql from 'mysql2';
 import cron from 'cron';
 import express from 'express';
 import cors from 'cors';
+import launchpadABI from './abis/token-launchpad.js'
+import dotenv from 'dotenv';
+import fs from 'fs';
+
+dotenv.config();
 const app = express();
+const LAST_BLOCK_FILE = './last_block.txt';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Web3 setup
-const web3 = new Web3('http://localhost:7545'); // Connect to Ganache or your Ethereum node
+const web3 = new Web3(process.env.GANACHE_URL); // Connect to Ganache or your Ethereum node
 
 // Smart contract details 
-const contractABI = [
-  {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "symbol",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "totalSupply",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      }
-    ],
-    "name": "TokenCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "repicient",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "TokenSwapped",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "TokensTransferredToDEX",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "CREATION_FEE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "DECIMALS",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "INCREMENT_STEP",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "INITIAL_PRICE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PRICE_INCREMENT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "THRESHOLD",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "TOTAL_SUPPLY",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "TokenCreators",
-    "outputs": [
-      {
-        "internalType": "contract Token",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amountSold",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "migrated",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "Tokens",
-    "outputs": [
-      {
-        "internalType": "contract Token",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amountSold",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "migrated",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "symbol",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "image",
-        "type": "string"
-      }
-    ],
-    "name": "createToken",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "dexAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amountIn",
-        "type": "uint256"
-      }
-    ],
-    "name": "getCost",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_dexAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setDexAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amountIn",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isBuy",
-        "type": "bool"
-      }
-    ],
-    "name": "swap",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "stateMutability": "payable",
-    "type": "receive"
-  }
-];
-const contractAddress = '0xb32c697D3bB20Bd3727bf9E99728A6f312D34DbC';
+const contractABI = launchpadABI.abi;
+const contractAddress = process.env.CONTRACT_ADDRESS;
 const tokenContract = new web3.eth.Contract(contractABI, contractAddress);
 
 // MySQL database setup
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'root',
-  database: 'blockchain',
+  host: process.env.HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DATABASE,
 });
 
 db.connect();
 
-// Fetch TokenCreated events from the blockchain
+// Function to get the last processed block from file
+function getLastProcessedBlock() {
+  if (fs.existsSync(LAST_BLOCK_FILE)) {
+    return parseInt(fs.readFileSync(LAST_BLOCK_FILE, 'utf-8')) || 0;
+  }
+  return 0;
+}
+
+// Function to update the last processed block in file
+function updateLastProcessedBlock(blockNumber) {
+  fs.writeFileSync(LAST_BLOCK_FILE, blockNumber.toString());
+}
+
+// Fetch TokenCreated events from new blocks only
 async function fetchEvents() {
-  const latestBlock = await web3.eth.getBlockNumber();  // Get the latest block
+  const latestBlock = parseInt(await web3.eth.getBlockNumber()); // Get the latest block
+  const lastProcessedBlock = getLastProcessedBlock();
+  const fromBlock = lastProcessedBlock > 0 ? lastProcessedBlock + 1 : 0; // Start from last processed block or block 0
+
+  console.log(`🔹 Fetching events from block ${fromBlock} to ${latestBlock}`);
+
+  if (fromBlock > latestBlock) {
+    console.log("⚠️ No new blocks to process.");
+    return;
+  }
+
   const pastLogs = await tokenContract.getPastEvents('TokenCreated', {
-    fromBlock: latestBlock - 10, // Check the last 10 blocks
-    toBlock: 'latest',  // Latest block
+    fromBlock: fromBlock,
+    toBlock: 'latest',
   });
 
-  // Process each event (insert data into MySQL database)
   pastLogs.forEach((event) => {
     const { creator, tokenAddress, name, symbol, totalSupply, description, image } = event.returnValues;
-    console.log(`Token Created - Address: ${tokenAddress}, Name: ${name}, Symbol: ${symbol}, Total Supply: ${totalSupply}, Description: ${description}, Image: ${image}`);
 
-    // Insert token data into MySQL database
-    db.query('INSERT INTO tokens (token_address, name, symbol, total_supply, description, image) VALUES (?, ?, ?, ?, ?, ?)', 
-      [tokenAddress, name, symbol, totalSupply, description, image], 
-      (err, result) => {
-        if (err) {
-          console.error('Error inserting data:', err);
-        }
-      });
+    console.log(`🔹 Checking token: ${tokenAddress}`);
+
+    // Check if token already exists in the database
+    db.query('SELECT * FROM tokens WHERE token_address = ?', [tokenAddress], (err, results) => {
+      if (err) {
+        console.error('❌ Error querying database:', err);
+        return;
+      }
+
+      if (results.length === 0) { // ✅ If no existing record, insert new token
+        console.log(`✅ New Token Detected! Inserting: ${name} (${symbol})`);
+
+        db.query(
+          'INSERT INTO tokens (token_address, name, symbol, total_supply, description, image, creator) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [tokenAddress, name, symbol, totalSupply, description, image, creator],
+          (insertErr, _result) => {
+            if (insertErr) {
+              console.error('❌ Error inserting token:', insertErr);
+            } else {
+              console.log('✅ Token successfully inserted:', name);
+            }
+          }
+        );
+      } else {
+        console.log(`⚠️ Token ${tokenAddress} already exists. Skipping.`);
+      }
+    });
   });
+
+  // ✅ Update the last processed block number
+  if (pastLogs.length > 0) {
+    updateLastProcessedBlock(latestBlock);
+  }
 }
 
 // Set up a cron job to periodically fetch data
-const job = new cron.CronJob('*/1 * * * *', fetchEvents); // Runs every 5 minutes
+const job = new cron.CronJob('*/1 * * * *', fetchEvents); // Runs every 1 minutes
 job.start();
 
+// API to get token list
 app.get('/tokens', (req, res) => {
   db.query('SELECT * FROM tokens', (err, results) => {
     if (err) {
@@ -467,20 +116,22 @@ app.get('/tokens', (req, res) => {
   });
 });
 
-// API to create a new token
-app.post('/create-token', express.json(), async (req, res) => {
-  const { name, symbol, description, image } = req.body;
-  try {
-    const receipt = await tokenContract.methods.createToken(name, symbol, description, image);
-    res.json({ success: true, receipt });
-  } catch (error) {
-    console.error('Error creating token:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+// // API to create a new token
+// app.post('/create-token', express.json(), async (req, res) => {
+//   const { name, symbol, description, image } = req.body;
+//   try {
+//     console.log(await tokenContract.methods.owner().call());
+//     const accounts = await web3.eth.getAccounts();
+//     const receipt = await tokenContract.methods.createToken(name, symbol, description, image).send({ from: accounts[0], value: web3.utils.toWei("0.01", "ether"), gas: 3000000 });
+//     res.json({ success: true, receipt });
+//   } catch (error) {
+//     console.error('Error creating token:', error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Start the server
-const PORT = 5000;
+const PORT = process.env.BACKEND_PORT;
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
 });

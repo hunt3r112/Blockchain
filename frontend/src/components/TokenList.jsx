@@ -3,24 +3,34 @@ import axios from 'axios';
 
 const TokenList = () => {
   const [tokens, setTokens] = useState([]);
+  const [loading, setLoading] = useState(false); // Loading state
 
+  // Function to fetch tokens
+  const fetchTokens = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(process.env.REACT_APP_TOKEN_LIST_ENDPOINT);
+      setTokens(response.data);
+    } catch (error) {
+      console.error('❌ Error fetching token list:', error);
+    }
+    setLoading(false);
+  };
+
+  // Fetch tokens on component mount
   useEffect(() => {
-    // Fetch the list of tokens from the backend
-    const fetchTokens = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/tokens');
-        setTokens(response.data);
-      } catch (error) {
-        console.error('Error fetching token list:', error);
-      }
-    };
-
     fetchTokens();
-  }, []);  // Empty dependency array ensures it runs only once when the component is mounted
+  }, []); // Empty dependency array ensures it runs only once when the component is mounted
 
   return (
     <div>
       <h1>Token List</h1>
+      
+      {/* Refresh Button */}
+      <button onClick={fetchTokens} disabled={loading} style={{ marginBottom: '10px' }}>
+        {loading ? 'Refreshing...' : 'Refresh Token List'}
+      </button>
+
       {tokens.length === 0 ? (
         <p>No tokens found.</p>
       ) : (

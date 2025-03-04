@@ -132,6 +132,10 @@ contract TokenLaunchpad {
         emit TokensTransferredToDEX(tokenAddress, remainingTokens);
     }
 
+    function getCreationFee() external pure returns (uint256) {
+        return CREATION_FEE;
+    }
+
     // cho phép hợp đồng nhận token
     receive() external payable {}
 }

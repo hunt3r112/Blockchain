@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { connectWallet } from '../services/web3';
+import launchpadABI from '../abis/token-launchpad.js';
 
 const CreateTokenForm = () => {
   const [name, setName] = useState('');
@@ -10,24 +11,41 @@ const CreateTokenForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    const web3 = await connectWallet();
+    if (!web3) return;
 
-    try {
-      const tokenData = { name, symbol, description, image };
-      const response = await axios.post('http://localhost:5000/create-token', tokenData);
-      
-      if (response.data.success) {
-        alert('Token created successfully!');
-        // Clear form fields
-        setName('');
-        setSymbol('');
-        setDescription('');
-        setImage('');
-      }
-    } catch (error) {
-      console.error('Error creating token:', error);
-      alert('Error creating token');
+    const accounts = await web3.eth.getAccounts();
+    if (accounts.length === 0) {
+      alert("❌ No accounts found. Please connect MetaMask.");
+      return;
     }
-  };
+    const senderAddress = accounts[0];
+  
+    // Smart contract details 
+    const contractABI = launchpadABI.abi;
+    const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
+    const tokenContract = new web3.eth.Contract(contractABI, contractAddress);
+  
+    try {
+      const fee = await tokenContract.methods.getCreationFee().call();
+      console.log(fee);
+      const receipt = await tokenContract.methods.createToken(name, symbol, description, image)
+        .send({ from: senderAddress, value: fee, gas: 3000000 });
+  
+      console.log("✅ Token created successfully! Receipt:", receipt);
+      alert('✅ Token created successfully!');
+  
+      // Clear form fields
+      setName('');
+      setSymbol('');
+      setDescription('');
+      setImage('');
+    } catch (error) {
+      console.error('❌ Error creating token:', error);
+      alert('❌ Error creating token');
+    }
+  };  
 
   return (
     <div>
