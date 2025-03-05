@@ -1,47 +1,6 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  ganache:
-    image: trufflesuite/ganache-cli:latest
-    container_name: ganache
-    ports:
-      - "7545:7545"
-    networks:
-      - blockchain-network
-    environment:
-      - GANCHES_FLAGS=-d
-
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: backend
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=root
-      - MYSQL_DATABASE=blockchain
-    depends_on:
-      - ganache
-      - mysql
-    networks:
-      - blockchain-network
-
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    networks:
-      - blockchain-network
-
   mysql:
     image: mysql:5.7
     container_name: mysql
@@ -52,6 +11,11 @@ services:
       MYSQL_DATABASE: blockchain
     networks:
       - blockchain-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   blockchain-network:
