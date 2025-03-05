@@ -5,9 +5,9 @@ module.exports = {
   solidity: "0.8.28",
   networks: {
     ganache: {
-      url: "HTTP://127.0.0.1:7545", // Địa chỉ của Ganache
+      url: "HTTP://ganache:7545", // Địa chỉ của Ganache
       accounts: [
-        '0x0cc4647f0cd6065ac851e893dc2b3649f333f289d31b6c33a993f04824c46bb5'
+        '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
       ]
     }
   }

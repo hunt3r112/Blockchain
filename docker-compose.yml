@@ -1,15 +1,30 @@
-version: '3.8'
+version: '3.9'
 
 services:
   ganache:
-    image: trufflesuite/ganache-cli:latest
+    image: trufflesuite/ganache
     container_name: ganache
+    command: ["--host", "0.0.0.0", "--port", "7545", "-d"]
     ports:
       - "7545:7545"
+      - "8545:8545"
     networks:
       - blockchain-network
-    environment:
-      - GANCHES_FLAGS=-d
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]  # Check if Ganache is reachable
+      interval: 10s  # How often to check
+      timeout: 5s  # Timeout for the check
+      retries: 5  # Number of retries before considering the service unhealthy
+      start_period: 5s
+
+  smart-contract:
+    build:
+      context: .
+      dockerfile: smart-contract/Dockerfile
+    container_name: smart-contract
+    depends_on:
+      ganache:
+        condition: service_healthy
 
   backend:
     build:
@@ -20,13 +35,16 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=production
+      - GANACHE_URL=http://ganache:7545
       - MYSQL_HOST=mysql
       - MYSQL_USER=root
       - MYSQL_PASSWORD=root
       - MYSQL_DATABASE=blockchain
     depends_on:
-      - ganache
-      - mysql
+      mysql:
+        condition: service_healthy
+      ganache:
+        condition: service_started
     networks:
       - blockchain-network
 
@@ -52,6 +70,11 @@ services:
       MYSQL_DATABASE: blockchain
     networks:
       - blockchain-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   blockchain-network:

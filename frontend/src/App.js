@@ -1,6 +1,7 @@
 import React from 'react';
 import CreateTokenForm from './components/CreateTokenForm';
 import TokenList from './components/TokenList';
+import './App.css';
 
 const App = () => {
   return (
