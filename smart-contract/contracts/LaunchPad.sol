@@ -10,11 +10,11 @@ interface IDEX {
 contract TokenLaunchpad {
     uint8 public constant DECIMALS = 18; //Hằng số decimals cho tất cả token tạo trên sàn
     uint256 public constant CREATION_FEE = 0.001 ether; // Phí tạo token
-    uint256 public constant INITIAL_PRICE = 0.002 ether; // giá ban đầu của token (đơn vị ether)
+    uint256 public constant INITIAL_PRICE = 0.00000002 ether; // giá ban đầu của token (đơn vị ether)
     uint256 public constant TOTAL_SUPPLY = 1000000000; // tổng số supply của token
     uint256 public constant THRESHOLD = 800000000; // Threshold để transfer token đến DEX
-    uint256 public constant INCREMENT_STEP = 100000; // số lượng token cần bán để tăng giá
-    uint256 public constant PRICE_INCREMENT = 0.0001 ether; // giá tăng sau mỗi lần bán được số token nhất định (INCREMENT_STEP)
+    uint256 public constant INCREMENT_STEP = 1000000; // số lượng token cần bán để tăng giá
+    uint256 public constant PRICE_INCREMENT = 0.00000001 ether; // giá tăng sau mỗi lần bán được số token nhất định (INCREMENT_STEP)
     
     address public owner; // địa chỉ owner của sàn
     address public dexAddress; // địa chỉ của DEX
@@ -75,32 +75,32 @@ contract TokenLaunchpad {
     }
 
     // tính cost hiện tại, cứ mỗi <INCREMENT_STEP> token sold sẽ tăng giá của token lên <PRICE_INCREMENT> so với INITIAL_PRICE
-    function getCost(address tokenAddress, uint256 amountIn) public view returns (uint256) {
+    function getUnitPrice(address tokenAddress) public view returns (uint256) {
         TokenInfo storage tokenInfo = Tokens[tokenAddress];
-        uint256 price = (INITIAL_PRICE + (tokenInfo.amountSold / INCREMENT_STEP) * PRICE_INCREMENT) * 10**18;
-        uint256 cost = amountIn * price;
-        return cost; // đơn vị wei
+        uint256 price = (INITIAL_PRICE + (tokenInfo.amountSold / INCREMENT_STEP) * PRICE_INCREMENT);
+        return price; // đơn vị wei
     }
 
     function swap(address tokenAddress, uint256 amountIn, bool isBuy) external payable {
-        uint256 cost = getCost(tokenAddress, amountIn);
+        uint256 unitPrice = getUnitPrice(tokenAddress);
+        uint256 cost = unitPrice * amountIn;
 
         // case buy (ETH -> Token)
         if (isBuy) {
             require(msg.value == cost, "Incorrect ETH amount sent");
 
             // gửi token cho buyer
-            Token(tokenAddress).transfer(msg.sender, amountIn * 10**18);
+            Token(tokenAddress).transfer(msg.sender, amountIn);
 
             // update số lượng bán
             Tokens[tokenAddress].amountSold += amountIn;
 
-            emit TokenSwapped(address(tokenAddress), msg.sender, tokenAddress, amountIn);
+            emit TokenSwapped(address(tokenAddress), msg.sender, tokenAddress, amountIn); 
         } 
         // case sell (Token -> ETH)
         else {
             // gửi token từ seller tới contract
-            Token(tokenAddress).transferFrom(msg.sender, address(this), amountIn * 10**18);
+            Token(tokenAddress).transferFrom(msg.sender, address(this), amountIn);
 
             // gửi ETH cho user
             payable(msg.sender).transfer(cost);

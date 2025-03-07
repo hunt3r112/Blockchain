@@ -48,13 +48,14 @@ const CreateTokenForm = () => {
   };  
 
   return (
-    <div>
-      <h1>Create New Token</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
+    <div className="create-token-container">
+      <h1 className="form-title">Create New Token</h1>
+      <form className="create-token-form" onSubmit={handleSubmit}>
+        <div className="form-group">
           <label>Token Name:</label>
           <input
             type="text"
+            className="form-input"
             placeholder="Token Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -62,10 +63,11 @@ const CreateTokenForm = () => {
           />
         </div>
 
-        <div>
+        <div className="form-group">
           <label>Token Symbol:</label>
           <input
             type="text"
+            className="form-input"
             placeholder="Token Symbol"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
@@ -73,9 +75,10 @@ const CreateTokenForm = () => {
           />
         </div>
 
-        <div>
+        <div className="form-group">
           <label>Description:</label>
           <textarea
+            className="form-input"
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -83,10 +86,11 @@ const CreateTokenForm = () => {
           />
         </div>
 
-        <div>
+        <div className="form-group">
           <label>Image URL:</label>
           <input
             type="text"
+            className="form-input"
             placeholder="Image URL"
             value={image}
             onChange={(e) => setImage(e.target.value)}
@@ -94,7 +98,7 @@ const CreateTokenForm = () => {
           />
         </div>
 
-        <button type="submit">Create Token</button>
+        <button type="submit" className="submit-button">Create Token</button>
       </form>
     </div>
   );

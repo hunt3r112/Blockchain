@@ -36,3 +36,276 @@
     transform: rotate(360deg);
   }
 }
+
+/* Main container for the form */
+.create-token-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Title styling */
+.form-title {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Form styling */
+.create-token-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Form group (for spacing around each input field) */
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* Label styling */
+.create-token-form label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* Input and textarea field styling */
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  font-size: 1rem;
+  margin-top: 5px;
+}
+
+.form-input:focus {
+  border-color: #4CAF50;
+  outline: none;
+  box-shadow: 0 0 3px #4CAF50;
+}
+
+/* Submit button styling */
+.submit-button {
+  padding: 12px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+/* Add some responsiveness */
+@media (max-width: 600px) {
+  .create-token-container {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .form-title {
+    font-size: 1.8rem;
+  }
+
+  .form-input {
+    font-size: 0.9rem;
+  }
+
+  .submit-button {
+    font-size: 0.9rem;
+  }
+}
+
+/* Container for the token list page */
+.token-list-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Title styling */
+.token-list-title {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Refresh button container */
+.refresh-button-container {
+  display: flex;               /* Enable flexbox for centering */
+  justify-content: center;     /* Center the button horizontally */
+  margin-bottom: 20px;         /* Space below the button */
+}
+
+/* Button styling */
+.refresh-button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: auto;
+}
+
+.refresh-button:hover {
+  background-color: #45a049;
+}
+
+.refresh-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.refresh-button.loading {
+  background-color: #888;
+}
+
+/* No tokens found message */
+.no-tokens {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* Horizontal list layout without symbols */
+.token-list {
+  display: flex;
+  flex-wrap: wrap; /* Allows wrapping of items */
+  justify-content: space-between; /* Space out the items evenly */
+  padding: 0;
+  margin: 0;
+  list-style-type: none; /* Removes the default list bullet points */
+}
+
+/* Each token item is styled as a card */
+.token-item {
+  background-color: #fff;
+  margin-bottom: 20px; /* Spacing between rows */
+  padding: 20px;
+  width: calc(33% - 20px); /* 3 items per row with spacing */
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  box-sizing: border-box; /* Prevent padding from affecting the width */
+}
+
+/* Token header */
+.token-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Token supply and description */
+.token-supply,
+.token-description {
+  font-size: 1rem;
+  color: #777;
+  margin: 5px 0;
+}
+
+/* Token image */
+.token-image {
+  margin-top: 10px;
+  max-width: 100px;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* Add responsiveness for smaller screens */
+@media (max-width: 768px) {
+  .token-item {
+    width: calc(50% - 20px); /* 2 items per row */
+  }
+}
+
+@media (max-width: 480px) {
+  .token-item {
+    width: 100%; /* 1 item per row */
+  }
+
+  .token-list {
+    justify-content: center; /* Center align on very small screens */
+  }
+
+  .refresh-button {
+    width: 100%; /* Make the refresh button take the full width on mobile */
+    font-size: 1rem;
+  }
+}
+
+.swap-section {
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.eth-input,
+.token-input {
+  width: calc(100% - 30px);
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.calculated-price {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 5px;
+}
+
+.swap-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.swap-button:hover {
+  background-color: #45a049;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.tab {
+  padding: 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f7f7f7;
+  margin-right: 5px;
+  border-radius: 4px;
+  flex: 1;
+  text-align: center;
+}
+
+.tab.active {
+  background-color: #45a049;
+  color: white;
+  font-weight: bold;
+}
